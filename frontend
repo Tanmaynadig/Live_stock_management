@@ -1,0 +1,267 @@
+import tkinter as tk
+from tkinter import messagebox, ttk
+import requests
+
+class LivestockApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Livestock Management System")
+        self.root.geometry("800x600")  # Set initial window size
+        self.show_login_page()
+
+    def show_login_page(self):
+        self.clear_frame()
+
+        self.login_frame = tk.Frame(self.root, bg='#f0f0f0')
+        self.login_frame.pack(expand=True, fill='both')
+
+        label_font = ('Arial', 14)
+        entry_font = ('Arial', 14)
+        button_font = ('Arial', 14, 'bold')
+        button_color = '#d2b48c'  # Light brown color for buttons
+
+        self.username_label = tk.Label(self.login_frame, text="Username", bg='#f0f0f0', font=label_font)
+        self.username_label.grid(row=0, column=0, padx=10, pady=10)
+        self.username_entry = tk.Entry(self.login_frame, font=entry_font)
+        self.username_entry.grid(row=0, column=1, padx=10, pady=10)
+
+        self.password_label = tk.Label(self.login_frame, text="Password", bg='#f0f0f0', font=label_font)
+        self.password_label.grid(row=1, column=0, padx=10, pady=10)
+        self.password_entry = tk.Entry(self.login_frame, show='*', font=entry_font)
+        self.password_entry.grid(row=1, column=1, padx=10, pady=10)
+
+        self.login_button = tk.Button(self.login_frame, text="Login", command=self.login, bg=button_color, fg='white', font=button_font)
+        self.login_button.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky='ew')
+
+    def login(self):
+        data = {
+            'username': self.username_entry.get(),
+            'password': self.password_entry.get()
+        }
+        response = requests.post('http://127.0.0.1:5000/login', json=data)
+        if response.status_code == 200:
+            messagebox.showinfo("Success", "Login successful")
+            self.show_main_page()
+        else:
+            messagebox.showwarning("Error", "Invalid credentials")
+
+    def show_main_page(self):
+        self.clear_frame()
+
+        self.frame = tk.Frame(self.root, bg='#f0f0f0')
+        self.frame.pack(expand=True, fill='both')
+
+        label_font = ('Arial', 14)
+        entry_font = ('Arial', 14)
+        button_font = ('Arial', 14, 'bold')
+        button_color = '#d2b48c'  # Light brown color for buttons
+
+        # Create left-side frame for dropdowns
+        self.left_frame = tk.Frame(self.frame, bg='#f0f0f0')
+        self.left_frame.pack(side='left', padx=10, pady=10, fill='y')
+
+        self.animal_id_label = tk.Label(self.left_frame, text="Animal ID", bg='#f0f0f0', font=label_font)
+        self.animal_id_label.grid(row=0, column=0, padx=10, pady=10)
+        self.animal_id_entry = tk.Entry(self.left_frame, font=entry_font)
+        self.animal_id_entry.grid(row=0, column=1, padx=10, pady=10)
+
+        self.species_label = tk.Label(self.left_frame, text="Species", bg='#f0f0f0', font=label_font)
+        self.species_label.grid(row=1, column=0, padx=10, pady=10)
+        self.species_combobox = ttk.Combobox(self.left_frame, values=["Cow", "Sheep", "Goat", "Pig","Dog"], font=entry_font)
+        self.species_combobox.grid(row=1, column=1, padx=10, pady=10)
+        self.species_combobox.bind("<<ComboboxSelected>>", self.update_breed_options)
+
+        self.breed_label = tk.Label(self.left_frame, text="Breed", bg='#f0f0f0', font=label_font)
+        self.breed_label.grid(row=2, column=0, padx=10, pady=10)
+        self.breed_combobox = ttk.Combobox(self.left_frame, values=[], font=entry_font)
+        self.breed_combobox.grid(row=2, column=1, padx=10, pady=10)
+
+        self.sex_label = tk.Label(self.left_frame, text="Sex", bg='#f0f0f0', font=label_font)
+        self.sex_label.grid(row=3, column=0, padx=10, pady=10)
+        self.sex_entry = tk.Entry(self.left_frame, font=entry_font)
+        self.sex_entry.grid(row=3, column=1, padx=10, pady=10)
+
+        self.status_label = tk.Label(self.left_frame, text="Status", bg='#f0f0f0', font=label_font)
+        self.status_label.grid(row=4, column=0, padx=10, pady=10)
+        self.status_entry = tk.Entry(self.left_frame, font=entry_font)
+        self.status_entry.grid(row=4, column=1, padx=10, pady=10)
+
+        self.breeder_id_label = tk.Label(self.left_frame, text="Breeder ID", bg='#f0f0f0', font=label_font)
+        self.breeder_id_label.grid(row=5, column=0, padx=10, pady=10)
+        self.breeder_id_entry = tk.Entry(self.left_frame, font=entry_font)
+        self.breeder_id_entry.grid(row=5, column=1, padx=10, pady=10)
+
+        # Create right-side frame for buttons
+        self.right_frame = tk.Frame(self.frame, bg='#f0f0f0')
+        self.right_frame.pack(side='right', padx=10, pady=10, fill='y')
+
+        self.add_button = tk.Button(self.right_frame, text="Add Livestock", command=self.add_livestock, bg=button_color, fg='white', font=button_font)
+        self.add_button.grid(row=0, column=0, padx=10, pady=10, sticky='ew')
+
+        self.add_button = tk.Button(self.right_frame, text="List livestock", command=self.list_animals, bg=button_color, fg='white', font=button_font)
+        self.add_button.grid(row=1, column=0, padx=10, pady=10, sticky='ew')
+
+       
+
+        self.delete_button = tk.Button(self.right_frame, text="Delete Selected", command=self.delete_livestock, bg=button_color, fg='white', font=button_font)
+        self.delete_button.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+
+        self.total_animals_button = tk.Button(self.right_frame, text="Total Animals", command=self.total_animals, bg=button_color, fg='white', font=button_font)
+        self.total_animals_button.grid(row=3, column=0, padx=10, pady=10, sticky='ew')
+
+        self.particular_animals_button = tk.Button(self.right_frame, text="Particular Animals", command=self.particular_animals, bg=button_color, fg='white', font=button_font)
+        self.particular_animals_button.grid(row=4, column=0, padx=10, pady=10, sticky='ew')
+
+        self.medication_button = tk.Button(self.right_frame, text="List Medication", command=self.list_medication, bg=button_color, fg='white', font=button_font)
+        self.medication_button.grid(row=5, column=0, padx=10, pady=10, sticky='ew')
+
+        self.feed_button = tk.Button(self.right_frame, text="List Feed", command=self.list_feed, bg=button_color, fg='white', font=button_font)
+        self.feed_button.grid(row=6, column=0, padx=10, pady=10, sticky='ew')
+
+        self.logout_button = tk.Button(self.right_frame, text="Logout", command=self.logout, bg=button_color, fg='white', font=button_font)
+        self.logout_button.grid(row=7, column=0, padx=10, pady=10, sticky='ew')
+
+        self.livestock_listbox = tk.Listbox(self.frame, font=entry_font)
+        self.livestock_listbox.pack(side='left', fill='both', expand=True, padx=10, pady=10)
+
+    def update_breed_options(self, event):
+        species = self.species_combobox.get()
+        response = requests.get(f'http://127.0.0.1:5000/breeds/{species}')
+        if response.status_code == 200:
+            breeds = response.json()
+            self.breed_combobox['values'] = breeds
+        else:
+            messagebox.showwarning("Error", "Failed to update breeds")
+
+    def update_species_options(self, event):
+        species = self.species_combobox.get()
+        response = requests.get(f'http://127.0.0.1:5000/species/{species}')
+        if response.status_code == 200:
+            specie = response.json()
+            self.breed_combobox['values'] = specie
+        else:
+            messagebox.showwarning("Error", "Failed to update species")
+
+
+    def add_livestock(self):
+        data = {
+            'AnimalID': self.animal_id_entry.get(),
+            'Species': self.species_combobox.get(),
+            'Breed': self.breed_combobox.get(),
+            'Sex': self.sex_entry.get(),
+            'Status': self.status_entry.get(),
+            'BreederID': self.breeder_id_entry.get()
+        }
+        response = requests.post('http://127.0.0.1:5000/add_animal', json=data)
+        if response.status_code == 200:
+            messagebox.showinfo("Success", "Animal added successfully")
+            self.clear_entries()
+        else:
+            messagebox.showwarning("Error", response.json().get('error'))
+
+    def clear_entries(self):
+        self.animal_id_entry.delete(0,tk.END)
+        self.species_combobox.delete(0, tk.END)
+        self.breed_combobox.delete(0, tk.END)
+        self.sex_entry.delete(0, tk.END)
+        self.status_entry.delete(0, tk.END)
+        self.breeder_id_entry.delete(0, tk.END)
+
+    
+    
+    def delete_livestock(self):
+        selected = self.livestock_listbox.curselection()
+        if selected:
+            item = self.livestock_listbox.get(selected[0])
+            animal_id = item.split(":")[0]
+            response = requests.delete(f'http://127.0.0.1:5000/delete_animal/{animal_id}')
+            if response.status_code == 200:
+                messagebox.showinfo("Success", "Animal deleted successfully")
+                self.list_animals()
+            else:
+                messagebox.showwarning("Error", response.json().get('error'))
+        else:
+            messagebox.showwarning("Error", "No animal selected")
+
+    def total_animals(self):
+        response = requests.get('http://127.0.0.1:5000/total_animals')
+        if response.status_code == 200:
+            total = response.json().get('total')
+            messagebox.showinfo("Total Animals", f"Total animals: {total}")
+        else:
+            messagebox.showwarning("Error", response.json().get('error'))
+
+    def particular_animals(self):
+        species = self.species_combobox.get()
+        response = requests.get(f'http://127.0.0.1:5000/total_animals_by_species/{species}')
+        if response.status_code == 200:
+            total = response.json().get('total')
+            messagebox.showinfo("Total Animals", f"Total {species} animals: {total}")
+        else:
+            messagebox.showwarning("Error", response.json().get('error'))
+
+    def list_medication(self):
+        response = requests.get('http://127.0.0.1:5000/list_medication')
+        if response.status_code == 200:
+            medications = response.json()
+            self.livestock_listbox.delete(0, tk.END)
+            for med in medications:
+                self.livestock_listbox.insert(tk.END, f"{med['MedicationID']}: {med['Name']} - {med['Description']}, Dosage: {med['Dosage']}")
+        else:
+            messagebox.showwarning("Error", "Failed to list medications")
+
+    def list_animals(self):
+        response = requests.get('http://127.0.0.1:5000/list_animals')
+        if response.status_code == 200:
+            livestock= response.json()
+            self.livestock_listbox.delete(0, tk.END)
+            for animal in livestock:
+                self.livestock_listbox.insert(tk.END, f"{animal['AnimalID']}: {animal['Species']} ({animal['Breed']}) - {animal['Sex']}, {animal['Status']}")
+        else:
+            messagebox.showwarning("Error", "Failed to list animals")
+
+    def search_animals(self):
+        response = requests.get('http://127.0.0.1:5000/search_animals')
+        if response.status_code == 200:
+            search = response.json()
+            self.livestock_listbox.delete(0, tk.END)
+            for animal in search:
+                self.livestock_listbox.insert(tk.END, f"{animal['AnimalID']}: {animal['Species']} ({animal['Breed']}) - {animal['Sex']}, {animal['Status']}")
+        else:
+            messagebox.showwarning("Error", "No animals found")
+
+    def list_feed(self):
+        response = requests.get('http://127.0.0.1:5000/list_feed')
+        if response.status_code == 200:
+            feed = response.json()
+            self.livestock_listbox.delete(0, tk.END)
+            for feed in feed:
+                self.livestock_listbox.insert(tk.END, f"{feed['FeedID']}: {feed['Name']} - {feed['Description']}")
+        else:
+            messagebox.showwarning("Error", "Failed to list feed")
+
+
+    def show_list(self, title, items):
+        list_window = tk.Toplevel(self.root)
+        list_window.title(title)
+        listbox = tk.Listbox(list_window, width=80, height=20)
+        listbox.pack(padx=10, pady=10)
+        for item in items:
+            listbox.insert(tk.END, item)
+
+    def logout(self):
+        response = requests.post('http://127.0.0.1:5000/logout')
+        if response.status_code == 200:
+            messagebox.showinfo("Success", "Logged out successfully")
+            self.show_login_page()
+        else:
+            messagebox.showwarning("Error", "Logout failed")
+
+    def clear_frame(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = LivestockApp(root)
+    root.mainloop()
